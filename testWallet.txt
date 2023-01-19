@@ -1,0 +1,74 @@
+var lightwallet = require("eth-lightwallet");
+var HookedWeb3Provider = require("hooked-web3-provider");
+
+var seedPhrase = lightwallet.keystore.generateRandomSeed();
+var password = "password";
+
+function keyGenerator(){
+    /* var keystore = lightwallet.keystore(seedPhrase,password);
+    keystore.generateNewAddress(password,3)
+    return addresses = keystore.getAddresses()
+    console.log(keystore) */
+    var keystore =  lightwallet.keystore(seedPhrase, password);
+
+    keystore.generateNewAddress(password, 3);
+    addresses = keystore.getAddresses();
+    return addresses[0]
+}
+
+
+function setSeed() {
+    var seed = lightwallet.keystore.generateRandomSeed();
+    //var password = prompt('Enter Password to encrypt seed', 'Password');
+    var keystore = new lightwallet.keystore(seed, password);
+
+    keystore.generateNewAddress(password, 3);
+    addresses = keystore.getAddresses();
+    myAdress= addresses[0];
+    console.log(myAdress)
+    var web3Provider = new HookedWeb3Provider({
+      host: 'http://104.236.65.136:8545',
+      transaction_signer: keystore
+    });
+
+    web3.setProvider(web3Provider);
+
+  }
+console.log(setSeed())
+ 
+console.log(keyGenerator())
+
+
+function generateAddrs(password,seed,numAddr){
+  var returnAddress
+lightwallet.keystore.createVault({
+    password: password,
+    seedPhrase: seed,
+    hdPathString: "m/0'/0'/0'"
+}, function (err, ks) {
+
+    ks.keyFromPassword(password, function (err, pwDerivedKey) {
+        if (!ks.isDerivedKeyCorrect(pwDerivedKey)) {
+            throw new Error("Incorrect derived key!");
+        }
+
+        try {
+            ks.generateNewAddress(pwDerivedKey, numAddr);
+        } catch (err) {
+            console.log(err);
+            console.trace();
+        }
+        var address = ks.getAddresses()[0];
+        returnAddress = ks.getAddresses()
+        console.log( ks.getAddresses())
+        
+        var prv_key = ks.exportPrivateKey(address, pwDerivedKey);
+
+        console.log('address and key: ', address, prv_key);
+
+
+    });
+    return returnAddress
+});
+
+}
